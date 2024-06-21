@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization Dashboard</title>
+    <!-- D3.js library -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Bootstrap CSS for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom styles -->
+    <style>
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Data Visualization Dashboard</h1>
+        <!-- Filters Section -->
+        <div class="row filter-container">
+            <div class="col-md-3">
+                <label for="endYear">End Year:</label>
+                <input type="number" id="endYear" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="topics">Topics:</label>
+                <input type="text" id="topics" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="sector">Sector:</label>
+                <input type="text" id="sector" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="region">Region:</label>
+                <input type="text" id="region" class="form-control">
+            </div>
+            <div class="col-md-3 mt-3">
+                <label for="pestle">PESTLE:</label>
+                <input type="text" id="pestle" class="form-control">
+            </div>
+            <div class="col-md-3 mt-3">
+                <label for="source">Source:</label>
+                <input type="text" id="source" class="form-control">
+            </div>
+            <div class="col-md-3 mt-3">
+                <label for="swot">SWOT:</label>
+                <input type="text" id="swot" class="form-control">
+            </div>
+            <div class="col-md-3 mt-3">
+                <label for="country">Country:</label>
+                <input type="text" id="country" class="form-control">
+            </div>
+            <div class="col-md-3 mt-3">
+                <label for="city">City:</label>
+                <input type="text" id="city" class="form-control">
+            </div>
+        </div>
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" onclick="fetchData()">Apply Filters</button>
+        </div>
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Intensity vs Likelihood</h2>
+                <div id="intensityLikelihoodChart" class="chart"></div>
+            </div>
+            <div class="col-md-6">
+                <h2>Relevance by Year</h2>
+                <div id="relevanceYearChart" class="chart"></div>
+            </div>
+        </div>
+    </div>
+    <!-- JavaScript for fetching data and rendering charts -->
+    <script>
+        function fetchData() {
+            const url = '/api';
+            const filters = {
+                end_year: document.getElementById('endYear').value,
+                topic: document.getElementById('topics').value,
+                sector: document.getElementById('sector').value,
+                region: document.getElementById('region').value,
+                pestle: document.getElementById('pestle').value,
+                source: document.getElementById('source').value,
+                swot: document.getElementById('swot').value,
+                country: document.getElementById('country').value,
+                city: document.getElementById('city').value
+            };
+
+            let params = new URLSearchParams(filters).toString();
+            fetch(`${url}?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderIntensityLikelihoodChart(data);
+                    renderRelevanceYearChart(data);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function renderIntensityLikelihoodChart(data) {
+            const svg = d3.select('#intensityLikelihoodChart')
+                          .html('')
+                          .append('svg')
+                          .attr('width', '100%')
+                          .attr('height', '100%')
+                          .attr('viewBox', '0 0 800 400');
+
+            svg.selectAll('circle')
+               .data(data)
+               .enter()
+               .append('circle')
+               .attr('cx', (d, i) => i * 50 + 25)
+               .attr('cy', 200)
+               .attr('r', d => d.intensity / 10)
+               .style('fill', 'blue');
+        }
+
+        function renderRelevanceYearChart(data) {
+            const svg = d3.select('#relevanceYearChart')
+                          .html('')
+                          .append('svg')
+                          .attr('width', '100%')
+                          .attr('height', '100%')
+                          .attr('viewBox', '0 0 800 400');
+
+            svg.selectAll('circle')
+               .data(data)
+               .enter()
+               .append('circle')
+               .attr('cx', d => d.start_year * 2)
+               .attr('cy', 200)
+               .attr('r', d => d.relevance / 10)
+               .style('fill', 'green');
+        }
+    </script>
+</body>
+</html>
